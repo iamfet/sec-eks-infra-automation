@@ -1,4 +1,3 @@
-# 1. Install istio-base first (CRDs and base components)
 resource "helm_release" "istio-base" {
   name             = "istio-base"
   repository       = "https://istio-release.storage.googleapis.com/charts"
@@ -9,7 +8,7 @@ resource "helm_release" "istio-base" {
   depends_on       = [module.eks, helm_release.aws-load-balancer-controller, helm_release.external-secrets]
 }
 
-# 2. Install istiod second (control plane)
+
 resource "helm_release" "istiod" {
   name             = "istiod"
   repository       = "https://istio-release.storage.googleapis.com/charts"
@@ -20,7 +19,7 @@ resource "helm_release" "istiod" {
   depends_on       = [helm_release.istio-base]
 }
 
-# 3. Install istio-ingressgateway last (data plane)
+
 resource "helm_release" "istio-ingressgateway" {
   name             = "istio-ingressgateway"
   repository       = "https://istio-release.storage.googleapis.com/charts"
