@@ -100,6 +100,29 @@ module "eks" {
     }
   }
 
+  node_security_group_additional_rules = {
+
+    #Enables automatic sidecar injection when pods are created
+    ingress_15017 = {
+      description                   = "Cluster API to Istio Webhook namespace.sidecar-injector.istio.io"
+      protocol                      = "TCP"
+      from_port                     = 15017
+      to_port                       = 15017
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+
+    #Enables service discovery and configuration distribution
+    ingress_15012 = {
+      description                   = "Cluster API to nodes ports/protocols"
+      protocol                      = "TCP"
+      from_port                     = 15012
+      to_port                       = 15012
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+  }
+
   tags = {
     environment = "dev"
     terraform   = true
