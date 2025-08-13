@@ -23,6 +23,7 @@ service:
       targetPort: 8443
       protocol: TCP
 
+
 containerPorts:
   status-port: 15021
   http2: 8080
