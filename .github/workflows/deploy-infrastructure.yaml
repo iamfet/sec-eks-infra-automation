@@ -3,7 +3,7 @@ name: Deploy Infrastructure
 on:
   push:
     branches: [main]
-    paths: ["**.tf", "**.yaml"]
+    paths: ["**.tf"]
   pull_request:
     branches: [main]
     paths: ["**.tf"]
@@ -89,9 +89,9 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.ACTIONS_AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
-          role-session-name: GitHubActions-InfraDeploy
+          role-session-name: GitHubActions
 
       - name: Create Terraform plugin cache directory
         run: mkdir -p ~/.terraform.d/plugin-cache
@@ -112,9 +112,6 @@ jobs:
           terraform plan -detailed-exitcode -no-color -out=tfplan \
             -var="user_for_admin_role=${{ secrets.ADMIN_USER_ARN }}" \
             -var="user_for_dev_role=${{ secrets.DEV_USER_ARN }}" \
-            -var="gitops_url=${{ secrets.GITOPS_URL }}" \
-            -var="gitops_username=${{ secrets.GITOPS_USERNAME }}" \
-            -var="gitops_password=${{ secrets.GITOPS_PASSWORD_TOKEN }}" \
             | tee plan_output.txt
           PLAN_EXIT_CODE=${PIPESTATUS[0]}
           echo "exitcode=$PLAN_EXIT_CODE" >> $GITHUB_OUTPUT
@@ -186,7 +183,7 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.ACTIONS_AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
           role-session-name: GitHubActions
 
@@ -216,9 +213,8 @@ jobs:
           kubectl get nodes
           kubectl get pods --all-namespaces
 
-      - name: Apply ArgoCD Applications
+      - name: Apply ArgoCD App
         if: env.CLUSTER_NAME != ''
         run: |
           kubectl apply -f argocd-apps/online-boutique-argo-app.yaml
           kubectl apply -f argocd-apps/cluster-resources-argo-app.yaml
-          kubectl apply -f argocd-apps/defectdojo-argo-app.yaml
