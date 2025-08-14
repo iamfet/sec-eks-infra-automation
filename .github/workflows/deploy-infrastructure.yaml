@@ -212,3 +212,10 @@ jobs:
           aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ vars.AWS_REGION }}
           kubectl get nodes
           kubectl get pods --all-namespaces
+
+      - name: Apply ArgoCD Applications
+        if: env.CLUSTER_NAME != ''
+        run: |
+          kubectl apply -f argocd-apps/online-boutique-argo-app.yaml
+          kubectl apply -f argocd-apps/cluster-resources-argo-app.yaml
+          kubectl apply -f argocd-apps/defectdojo-argo-app.yaml
