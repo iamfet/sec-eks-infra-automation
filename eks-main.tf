@@ -136,7 +136,7 @@ module "eks" {
 
 # EBS CSI Driver IRSA
 module "ebs_csi_irsa_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "~> 5.59"
 
   role_name             = "${var.project_name}-ebs-csi"
