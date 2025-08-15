@@ -46,6 +46,12 @@ variable "user_for_dev_role" {
   # No default value
 }
 
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+  default     = "dev"
+}
+
 # If the git repository that ArgoCD syncs is private, these variables are required
 #variable "gitops_url" {
 #  description = "URL of git repo argocd connects and sync"
