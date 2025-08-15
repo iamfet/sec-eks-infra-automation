@@ -18,31 +18,9 @@ resource "helm_release" "argocd" {
   version          = "8.2.5"
   create_namespace = true
   namespace        = "argocd"
-  depends_on       = [module.eks]
+  depends_on       = [module.eks, helm_release.aws-load-balancer-controller]
 
   values = [
     file("${path.module}/helm-values/argocd.yaml")
   ]
 }
-
-# add repo secrets if repo argocd syncs is private
-#resource "kubernetes_secret" "argocd_gitops_repo" {
-#  depends_on = [helm_release.argocd]
-#
-#  metadata {
-#    name      = "gitops-repo"
-#    namespace = "argocd"
-#    labels = {
-#      "argocd.argoproj.io/secret-type" = "repository" #enable argocd to find the secret to connect to repo
-#    }
-#  }
-#
-#
-#  data = {
-#    type : "git"
-#    url : var.gitops_url
-#    username : var.gitops_username
-#    password : var.gitops_password
-#  }
-#  type = "Opaque"
-#}

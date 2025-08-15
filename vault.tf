@@ -1,10 +1,10 @@
 # VAULT SERVER INFRASTRUCTURE
 # IRSA Role for Vault Server - Enables auto-unsealing via AWS KMS
 module "vault_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.59.0"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
+  version = "~> 6.0"
 
-  role_name = "vault-kms-role"
+  name = "${var.project_name}-vault-irsa"
 
   oidc_providers = {
     main = {
@@ -13,14 +13,21 @@ module "vault_irsa" {
     }
   }
 
-  role_policy_arns = {
-    kms = aws_iam_policy.vault_kms.arn
+  tags = {
+    Environment = var.environment
+    Terraform   = "true"
   }
+}
+
+# Attach KMS policy to Vault IRSA role
+resource "aws_iam_role_policy_attachment" "vault_kms" {
+  role       = module.vault_irsa.name
+  policy_arn = aws_iam_policy.vault_kms.arn
 }
 
 # IAM Policy for Vault KMS operations
 resource "aws_iam_policy" "vault_kms" {
-  name = "vault-kms-policy"
+  name = "${var.project_name}-vault-kms-policy"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -35,13 +42,20 @@ resource "aws_iam_policy" "vault_kms" {
       Resource = aws_kms_key.vault_unseal.arn
     }]
   })
+
+  tags = {
+    Environment = var.environment
+    Terraform   = "true"
+  }
 }
 
 # KMS Key and Alias for Vault auto-unsealing
 resource "aws_kms_key" "vault_unseal" {
   description = "Vault unseal key"
   tags = {
-    Name = "vault-unseal-key"
+    Name        = "vault-unseal-key"
+    Environment = var.environment
+    Terraform   = "true"
   }
 }
 
@@ -75,7 +89,7 @@ resource "helm_release" "vault" {
     },
     {
       name  = "server.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-      value = module.vault_irsa.iam_role_arn
+      value = module.vault_irsa.arn
     }
   ]
 }

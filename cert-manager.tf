@@ -3,10 +3,10 @@ data "aws_route53_zone" "fetdevops" {
 }
 
 module "cert_manager_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.39.0"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
+  version = "~> 6.0"
 
-  role_name                     = "${var.project_name}-cert-manager-irsa"
+  name                          = "${var.project_name}-cm-irsa"
   attach_cert_manager_policy    = true
   cert_manager_hosted_zone_arns = [data.aws_route53_zone.fetdevops.arn]
 
@@ -16,8 +16,12 @@ module "cert_manager_irsa" {
       namespace_service_accounts = ["cert-manager:cert-manager"]
     }
   }
-}
 
+  tags = {
+    Environment = var.environment
+    Terraform   = "true"
+  }
+}
 
 
 
@@ -32,7 +36,7 @@ resource "helm_release" "cert_manager" {
 
   set = [
     {
-      name  = "crds.enabled"
+      name  = "installCRDs"
       value = "true"
     },
     {
@@ -41,7 +45,7 @@ resource "helm_release" "cert_manager" {
     },
     {
       name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-      value = module.cert_manager_irsa.iam_role_arn
+      value = module.cert_manager_irsa.arn
     }
   ]
 }
