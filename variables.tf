@@ -22,7 +22,7 @@ variable "project_name" {
   default     = "ama-shop"
 }
 
-variable "cluster_version" {
+variable "kubernetes_version" {
   description = "Version of the EKS cluster"
   type        = string
   default     = "1.33"
