@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/iamfet/online-boutique-gitops.git
+    repoURL: https://github.com/iamfet/sec-gitops-online-boutique/actions
     targetRevision: main
     path: defectdojo-app
   destination:
