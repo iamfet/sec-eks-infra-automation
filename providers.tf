@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 1.5"
 
   backend "s3" {
-    bucket       = "state-eks-secure-infra-automation"
+    bucket       = "state-sec-eks-infra-automation-7324"
     key          = "terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true
