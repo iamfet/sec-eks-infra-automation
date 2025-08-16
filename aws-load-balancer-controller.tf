@@ -26,7 +26,7 @@ resource "helm_release" "aws-load-balancer-controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
-  version    = "1.13.3"
+  version    = "1.13.4"
   namespace  = "kube-system"
   depends_on = [module.eks, module.vpc, module.aws_load_balancer_controller_pod_identity]
 

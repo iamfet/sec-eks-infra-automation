@@ -2,7 +2,7 @@ resource "helm_release" "external-secrets" {
   name             = "external-secrets"
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
-  version          = "0.18.2"
+  version          = "0.19.2"
   create_namespace = true
   namespace        = "external-secrets-system"
   depends_on       = [module.eks, helm_release.aws-load-balancer-controller]

@@ -28,7 +28,7 @@ resource "helm_release" "cluster-autoscaler" {
   name       = "cluster-autoscaler"
   repository = "https://kubernetes.github.io/autoscaler"
   chart      = "cluster-autoscaler"
-  version    = "9.48.0"
+  version    = "9.50.1"
   namespace  = "kube-system"
   depends_on = [module.eks, helm_release.aws-load-balancer-controller, module.cluster_autoscaler_pod_identity]
 

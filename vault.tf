@@ -67,7 +67,7 @@ resource "helm_release" "vault" {
   name             = "vault"
   repository       = "https://helm.releases.hashicorp.com"
   chart            = "vault"
-  version          = "0.28.1"
+  version          = "0.30.1"
   create_namespace = true
   namespace        = "vault"
   depends_on       = [module.eks, aws_kms_key.vault_unseal]
