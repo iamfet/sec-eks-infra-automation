@@ -168,6 +168,7 @@ module "ebs_csi_driver_pod_identity" {
 }
 
 
+
 # EBS CSI Driver IRSA (commented out - replaced with Pod Identity)
 # module "ebs_csi_driver_irsa" {
 #   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
