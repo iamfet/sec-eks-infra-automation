@@ -452,31 +452,19 @@ The repository includes three GitHub Actions workflows for complete infrastructu
 - ✅ **Deployment Verification** - Validate cluster and pods
 - 🔄 **ArgoCD Apps** - Deploy GitOps applications
 
-**Required GitHub Secrets**:
-```yaml
-# AWS Authentication
-ACTIONS_AWS_ROLE_ARN: "arn:aws:iam::123456789012:role/github-actions-role"
+#### **GitHub Secrets and Variables Configuration**
 
-# User ARNs for EKS RBAC - Only these users will have cluster access
-ADMIN_USER_ARN: "arn:aws:iam::123456789012:user/admin"
-DEV_USER_ARN: "arn:aws:iam::123456789012:user/developer"
-```
-
-**Optional GitHub Secrets** (for ArgoCD with private Git repositories):
-```yaml
-# GitOps Repository Access
-GITOPS_URL: "https://github.com/username/private-gitops-repo.git"
-GITOPS_USERNAME: "username"
-GITOPS_PASSWORD: "token_or_password"
-```
+| Type | Name | Required | Description | Example |
+|------|------|----------|-------------|----------|
+| **Secret** | `ACTIONS_AWS_ROLE_ARN` | ✅ | AWS OIDC role for GitHub Actions | `arn:aws:iam::123456789012:role/github-actions-role` |
+| **Secret** | `ADMIN_USER_ARN` | ✅ | ARN of AWS user for admin access | `arn:aws:iam::123456789012:user/admin` |
+| **Secret** | `DEV_USER_ARN` | ✅ | ARN of AWS user for developer access | `arn:aws:iam::123456789012:user/developer` |
+| **Variable** | `AWS_REGION` | ✅ | AWS deployment region | `us-east-1` |
+| **Secret** | `GITOPS_URL` | ❌ | GitOps repository URL (for private repos) | `https://github.com/username/private-repo.git` |
+| **Secret** | `GITOPS_USERNAME` | ❌ | GitOps repository username | `username` |
+| **Secret** | `GITOPS_PASSWORD` | ❌ | GitOps repository token/password | `ghp_xxxxxxxxxxxx` |
 
 > **🔒 Access Control**: Only users configured in `ADMIN_USER_ARN` and `DEV_USER_ARN` will be granted access to the EKS cluster through access entries. All other AWS users will be denied cluster access.
-
-**Required GitHub Variables**:
-```yaml
-# AWS Region for deployment
-AWS_REGION: "us-east-1"
-```
 
 ### **3. Destroy Infrastructure (`destroy-infrastructure.yaml`)**
 
