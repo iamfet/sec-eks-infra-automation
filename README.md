@@ -78,7 +78,7 @@ Complete **DevSecOps platform** on Amazon EKS featuring zero-trust security, aut
 3. **🛡️ Service Mesh Security** - Istio mTLS + authorization policies
 4. **⚖️ Policy Security** - OPA Gatekeeper admission control
 5. **🗝️ Secrets Security** - Vault + External Secrets + KMS encryption
-6. **🔐 Identity Security** - Pod Identity + RBAC + service accounts
+6. **🔐 Identity Security** - AWS API Acess Entries + RBAC
 7. **📊 Observability Security** - Comprehensive monitoring + audit logging
 
 ## ✨ Key Features
@@ -87,6 +87,7 @@ Complete **DevSecOps platform** on Amazon EKS featuring zero-trust security, aut
 - **Infrastructure as Code** - Complete Terraform automation
 - **GitOps Deployment** - ArgoCD continuous delivery
 - **Auto-Scaling** - Cluster Autoscaler for dynamic node management
+- **Pod Identity** - Secure AWS service authentication without long-lived credentials
 - **CI/CD Integration** - GitHub Actions workflows with security scanning
 
 ### **🔒 Security & Compliance**
@@ -303,31 +304,11 @@ git push origin main
 
 ## 🚀 Detailed Deployment Instructions
 
-### **Step 1: Environment Setup**
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/iamfet/sec-eks-infra-automation.git
-   cd sec-eks-infra-automation
-   ```
-
-2. **Set environment variables**
-   ```bash
-   export AWS_REGION=us-east-1
-   export PROJECT_NAME=carney-shop
-   ```
-
-3. **Verify AWS credentials**
-   ```bash
-   aws sts get-caller-identity
-   aws iam list-attached-role-policies --role-name <your-role>
-   ```
-
-### **Step 2: Configure GitHub Secrets**
+### **Step 1: Configure GitHub Secrets**
 
 Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD section for complete list)
 
-### **Step 3: Backend Setup (First Time Only)**
+### **Step 2: Backend Setup (First Time Only)**
 
 1. **Bootstrap backend via GitHub Actions**
    - Go to Actions tab in GitHub repository
@@ -335,7 +316,7 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
    - Type "create" when prompted to confirm
    - GitHub Actions will automatically create S3 bucket and DynamoDB table
 
-### **Step 4: Infrastructure Deployment**
+### **Step 3: Infrastructure Deployment**
 
 1. **Trigger automated deployment**
    ```bash
@@ -351,7 +332,7 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
    - Check Actions tab for deployment progress
    - Deployment includes cluster verification and ArgoCD app installation
 
-### **Step 5: Post-Deployment Verification**
+### **Step 4: Post-Deployment Verification**
 
 1. **Configure kubectl access**
    ```bash
