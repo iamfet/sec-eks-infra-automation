@@ -264,15 +264,15 @@ Configured for high availability with Network Load Balancer (NLB) integration:
 
 ## ⚙️ Required Variables
 
-### **Mandatory Variables**
-These variables **must** be provided in `terraform.tfvars`:
+### **Required Variables**
+These variables are configured via GitHub Secrets for automated deployment:
 
 > **⚠️ Important**: AWS users must be created in your AWS account before deploying the infrastructure.
 
-| Variable | Description | Example |
-|----------|-------------|----------|
-| `user_for_admin_role` | ARN of AWS user for admin access (must exist in AWS) | `arn:aws:iam::123456789012:user/admin` |
-| `user_for_dev_role` | ARN of AWS user for developer access (must exist in AWS) | `arn:aws:iam::123456789012:user/developer` |
+| Variable | GitHub Secret | Description | Example |
+|----------|---------------|-------------|----------|
+| `user_for_admin_role` | `ADMIN_USER_ARN` | ARN of AWS user for admin access | `arn:aws:iam::123456789012:user/admin` |
+| `user_for_dev_role` | `DEV_USER_ARN` | ARN of AWS user for developer access | `arn:aws:iam::123456789012:user/developer` |
 
 ### **Optional Variables with Defaults**
 
@@ -286,53 +286,23 @@ These variables **must** be provided in `terraform.tfvars`:
 | `public_subnets_cidr` | `["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]` | Public subnet CIDRs |
 | `environment` | `dev` | Environment name |
 
-### **Variable Configuration Examples**
-
-**Minimal terraform.tfvars:**
-```hcl
-# Required variables only
-user_for_admin_role = "arn:aws:iam::123456789012:user/admin"
-user_for_dev_role = "arn:aws:iam::123456789012:user/developer"
-```
-
-**Complete terraform.tfvars:**
-```hcl
-# Project Configuration
-project_name = "my-devsecops-platform"
-aws_region = "us-west-2"
-kubernetes_version = "1.33"
-
-# Network Configuration
-vpc_cidr_block = "172.16.0.0/16"
-private_subnets_cidr = ["172.16.1.0/24", "172.16.2.0/24", "172.16.3.0/24"]
-public_subnets_cidr = ["172.16.101.0/24", "172.16.102.0/24", "172.16.103.0/24"]
-
-# RBAC Configuration
-user_for_admin_role = "arn:aws:iam::123456789012:user/platform-admin"
-user_for_dev_role = "arn:aws:iam::123456789012:user/developer"
-
-# Environment
-environment = "production"
-```
-
 ## 🚀 Quick Start
 
+### **Automated Deployment**
 ```bash
 # Clone and setup
 git clone https://github.com/iamfet/sec-eks-infra-automation.git
 cd sec-eks-infra-automation
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your AWS settings
 
-# Deploy backend (first time only)
-cd backend && terraform init && terraform apply && cd ..
+# Configure GitHub Secrets (see GitHub Actions CI/CD section)
+# Required: ADMIN_USER_ARN, DEV_USER_ARN, ACTIONS_AWS_ROLE_ARN, AWS_REGION
 
-# Deploy infrastructure
-terraform init
-terraform apply -var-file="terraform.tfvars"
-
-# Configure kubectl
-aws eks update-kubeconfig --region us-east-1 --name $(terraform output -raw cluster_name)
+# Trigger automated deployment (GitHub Actions triggered by .tf file changes only)
+echo "# Trigger deployment" >> variables.tf
+git add variables.tf
+git commit -m "Trigger infrastructure deployment"
+git push origin main
+# GitHub Actions will automatically deploy when .tf files are modified
 ```
 
 ## 🚀 Detailed Deployment Instructions
@@ -357,113 +327,52 @@ aws eks update-kubeconfig --region us-east-1 --name $(terraform output -raw clus
    aws iam list-attached-role-policies --role-name <your-role>
    ```
 
-### **Step 2: Configure Variables**
+### **Step 2: Configure GitHub Secrets**
 
-1. **Create terraform.tfvars**
-   ```bash
-   cp terraform.tfvars.example terraform.tfvars
-   ```
-
-2. **Edit variables**
-   ```hcl
-   # terraform.tfvars
-   project_name = "carney-shop"
-   
-   # Required: AWS User ARNs for RBAC
-   user_for_admin_role = "arn:aws:iam::495599766789:user/fetdevops"
-   user_for_dev_role = "arn:aws:iam::495599766789:user/developer"
-   
-   # Optional: Network Configuration (defaults provided)
-   vpc_cidr_block = "10.0.0.0/16"
-   private_subnets_cidr = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-   public_subnets_cidr = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
-   
-   # Optional: EKS Configuration
-   kubernetes_version = "1.33"
-   aws_region = "us-east-1"
-   environment = "dev"
-   ```
+Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD section for complete list)
 
 ### **Step 3: Backend Setup (First Time Only)**
 
-1. **Deploy Terraform backend**
-   ```bash
-   cd backend/
-   terraform init
-   terraform plan
-   terraform apply
-   cd ..
-   ```
-
-2. **Initialize main Terraform**
-   ```bash
-   terraform init
-   ```
+1. **Bootstrap backend via GitHub Actions**
+   - Go to Actions tab in GitHub repository
+   - Run "Bootstrap Backend" workflow
+   - Type "create" when prompted to confirm
+   - GitHub Actions will automatically create S3 bucket and DynamoDB table
 
 ### **Step 4: Infrastructure Deployment**
 
-1. **Plan the deployment**
+1. **Trigger automated deployment**
    ```bash
-   terraform plan -var-file="terraform.tfvars"
+   # Make any change to .tf files to trigger GitHub Actions
+   echo "# Deploy infrastructure" >> variables.tf
+   git add variables.tf
+   git commit -m "Deploy infrastructure"
+   git push origin main
    ```
 
-2. **Deploy infrastructure**
-   ```bash
-   terraform apply -var-file="terraform.tfvars" -auto-approve
-   ```
-
-   **Deployment time**: ~20-30 minutes
-
-3. **Verify deployment**
-   ```bash
-   # Check cluster status
-   aws eks describe-cluster --name $(terraform output -raw cluster_name)
-   
-   # Configure kubectl
-   aws eks update-kubeconfig --region us-east-1 --name $(terraform output -raw cluster_name)
-   
-   # Verify nodes
-   kubectl get nodes
-   ```
+2. **Monitor deployment**
+   - GitHub Actions will automatically deploy infrastructure
+   - Check Actions tab for deployment progress
+   - Deployment includes cluster verification and ArgoCD app installation
 
 ### **Step 5: Post-Deployment Verification**
 
-1. **Check all pods are running**
+1. **Configure kubectl access**
    ```bash
+   aws eks update-kubeconfig --region us-east-1 --name carney-shop-eks-cluster
+   ```
+
+2. **Verify deployment status**
+   ```bash
+   kubectl get nodes
    kubectl get pods --all-namespaces
    ```
 
-2. **Verify ArgoCD**
-   ```bash
-   kubectl get pods -n argocd
-   kubectl port-forward svc/argocd-server -n argocd 8080:443
-   # Access: https://localhost:8080
-   ```
-
-3. **Verify Grafana**
-   ```bash
-   kubectl get pods -n monitoring
-   kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80
-   # Access: http://localhost:3000
-   ```
-
-4. **Check Vault status**
-   ```bash
-   kubectl get pods -n vault
-   kubectl exec -n vault vault-0 -- vault status
-   ```
-
-### **Step 6: GitOps Setup**
-
-1. **Deploy ArgoCD applications**
-   ```bash
-   kubectl apply -f argocd-apps/
-   ```
-
-2. **Verify applications**
-   ```bash
-   kubectl get applications -n argocd
-   ```
+**Note**: GitHub Actions automatically:
+- Verifies cluster deployment
+- Installs ArgoCD applications
+- Validates all pods are running
+- Configures GitOps workflow
 
 ## 🌐 Service Access
 
@@ -488,9 +397,10 @@ The repository includes three GitHub Actions workflows for complete infrastructu
 
 **Purpose**: Sets up Terraform remote state backend (S3 + DynamoDB)
 
-**Trigger**: Manual (`workflow_dispatch`)
+**Trigger**: Manual with confirmation (`workflow_dispatch`)
 
 **Key Features**:
+- ⚠️ **Confirmation Required** - Must type "create" to proceed
 - 🔒 **OIDC Authentication** - Secure AWS access without long-lived credentials
 - 🗄️ **S3 Backend Setup** - Creates remote state storage
 - 🔒 **DynamoDB Locking** - Prevents concurrent Terraform runs
@@ -525,11 +435,20 @@ The repository includes three GitHub Actions workflows for complete infrastructu
 - ✅ **Deployment Verification** - Validate cluster and pods
 - 🔄 **ArgoCD Apps** - Deploy GitOps applications
 
-**Required Secrets**:
+**Required GitHub Secrets**:
 ```yaml
+# AWS Authentication
 ACTIONS_AWS_ROLE_ARN: "arn:aws:iam::123456789012:role/github-actions-role"
+
+# User ARNs for EKS RBAC
 ADMIN_USER_ARN: "arn:aws:iam::123456789012:user/admin"
 DEV_USER_ARN: "arn:aws:iam::123456789012:user/developer"
+```
+
+**Required GitHub Variables**:
+```yaml
+# AWS Region for deployment
+AWS_REGION: "us-east-1"
 ```
 
 ### **3. Destroy Infrastructure (`destroy-infrastructure.yaml`)**
@@ -540,8 +459,9 @@ DEV_USER_ARN: "arn:aws:iam::123456789012:user/developer"
 
 **Safety Features**:
 - ⚠️ **Confirmation Required** - Must type "destroy" to proceed
-- 🧹 **ArgoCD Cleanup** - Removes applications before infrastructure
-- 📝 **Backend Warning** - Manual backend cleanup instructions
+- 🔒 **OIDC Authentication** - Secure AWS access for destruction
+- 🧹 **Complete Cleanup** - Destroys all EKS and VPC resources
+- 📝 **Backend Warning** - Provides instructions for manual backend cleanup
 
 ## 📦 Components
 
@@ -565,20 +485,19 @@ DEV_USER_ARN: "arn:aws:iam::123456789012:user/developer"
 1. **ArgoCD Configuration**
    ```bash
    vim helm-values/argocd.yaml
-   terraform apply -var-file="terraform.tfvars"
+   git add helm-values/argocd.yaml
+   git commit -m "Update ArgoCD configuration"
+   git push origin main
+   # GitHub Actions will automatically apply changes
    ```
 
 2. **Prometheus/Grafana Settings**
    ```bash
    vim helm-values/prometheus.yaml
-   terraform apply -var-file="terraform.tfvars"
-   ```
-
-### **Add Custom Policies**
-
-1. **OPA Gatekeeper constraints**
-   ```bash
-   kubectl apply -f custom-policies/
+   git add helm-values/prometheus.yaml
+   git commit -m "Update Prometheus configuration"
+   git push origin main
+   # GitHub Actions will automatically apply changes
    ```
 
 ### **Scale Cluster**
@@ -597,7 +516,10 @@ DEV_USER_ARN: "arn:aws:iam::123456789012:user/developer"
 
 2. **Apply changes**
    ```bash
-   terraform apply -var-file="terraform.tfvars"
+   git add eks-main.tf
+   git commit -m "Scale cluster nodes"
+   git push origin main
+   # GitHub Actions will automatically apply changes
    ```
 
 ## 🚨 Troubleshooting
@@ -648,15 +570,20 @@ kubectl get ingress --all-namespaces
 
 1. **Update Terraform modules**
    ```bash
-   terraform get -update
-   terraform plan -var-file="terraform.tfvars"
-   terraform apply -var-file="terraform.tfvars"
+   # Update .terraform.lock.hcl or module versions in .tf files
+   git add .
+   git commit -m "Update Terraform modules"
+   git push origin main
+   # GitHub Actions will automatically plan and apply
    ```
 
 2. **Update Helm charts**
    ```bash
    # Modify version in .tf files
-   terraform apply -var-file="terraform.tfvars"
+   git add .
+   git commit -m "Update Helm chart versions"
+   git push origin main
+   # GitHub Actions will automatically apply changes
    ```
 
 ### **Backup Important Data**
@@ -682,7 +609,9 @@ kubectl get ingress --all-namespaces
 
 2. **Destroy Terraform resources**
    ```bash
-   terraform destroy -var-file="terraform.tfvars" -auto-approve
+   # Use GitHub Actions destroy workflow
+   # Go to Actions tab -> Destroy Infrastructure -> Run workflow
+   # Type "destroy" to confirm
    ```
 
 3. **Clean up backend (optional)**
