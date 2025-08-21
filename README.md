@@ -383,6 +383,12 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
 | **Vault** | `kubectl port-forward svc/vault -n vault 8200:8200` | http://localhost:8200 | Initialize: `kubectl exec -n vault vault-0 -- vault operator init` |
 | **Prometheus** | `kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090` | http://localhost:9090 | No authentication required |
 
+## 🔐 AWS OIDC Configuration
+
+**AWS OIDC Configuration**: Configure AWS OIDC provider for GitHub Actions to assume roles without storing AWS credentials in GitHub
+
+> **⚠️ Important**: This must be configured before running any GitHub Actions workflows.
+
 ## 🚀 GitHub Actions CI/CD
 
 ### **Automated Workflows**
@@ -391,15 +397,14 @@ The repository includes three GitHub Actions workflows for complete infrastructu
 
 ### **1. Bootstrap Backend (`bootstrap-backend.yaml`)**
 
-**Purpose**: Sets up Terraform remote state backend (S3 + DynamoDB)
+**Purpose**: Sets up Terraform remote state backend (S3 with native state lock)
 
 **Trigger**: Manual with confirmation (`workflow_dispatch`)
 
 **Key Features**:
 - ⚠️ **Confirmation Required** - Must type "create" to proceed
-- 🔒 **OIDC Authentication** - Secure AWS access without long-lived credentials
 - 🗄️ **S3 Backend Setup** - Creates remote state storage
-- 🔒 **DynamoDB Locking** - Prevents concurrent Terraform runs
+- 🔒 **State Locking** - Prevents concurrent Terraform runs
 
 ### **2. Deploy Infrastructure (`deploy-infrastructure.yaml`)**
 
@@ -439,6 +444,14 @@ ACTIONS_AWS_ROLE_ARN: "arn:aws:iam::123456789012:role/github-actions-role"
 # User ARNs for EKS RBAC - Only these users will have cluster access
 ADMIN_USER_ARN: "arn:aws:iam::123456789012:user/admin"
 DEV_USER_ARN: "arn:aws:iam::123456789012:user/developer"
+```
+
+**Optional GitHub Secrets** (for ArgoCD with private Git repositories):
+```yaml
+# GitOps Repository Access
+GITOPS_URL: "https://github.com/username/private-gitops-repo.git"
+GITOPS_USERNAME: "username"
+GITOPS_PASSWORD: "token_or_password"
 ```
 
 > **🔒 Access Control**: Only users configured in `ADMIN_USER_ARN` and `DEV_USER_ARN` will be granted access to the EKS cluster through access entries. All other AWS users will be denied cluster access.
