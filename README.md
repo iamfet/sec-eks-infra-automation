@@ -88,6 +88,51 @@ Complete **DevSecOps platform** on Amazon EKS featuring:
 6. **🔐 Identity Security** - Pod Identity + RBAC + service accounts
 7. **📊 Observability Security** - Comprehensive monitoring + audit logging
 
+### **🔐 AWS Pod Identity Integration**
+
+The platform uses **AWS Pod Identity** (successor to IRSA) for secure, credential-free AWS service authentication. Pod Identity provides temporary, automatically-rotated credentials to Kubernetes workloads without storing long-lived AWS access keys.
+
+#### **Pod Identity Roles and Permissions**
+
+| Service | Pod Identity Role | AWS Permissions | Purpose |
+|---------|------------------|-----------------|----------|
+| **Vault** | `vault-pod-identity` | KMS encrypt/decrypt operations | Auto-unsealing via dedicated KMS key |
+| **External Secrets** | `external-secrets-pod-identity` | Secrets Manager read access | Secure secret retrieval from AWS |
+| **AWS Load Balancer Controller** | `aws-load-balancer-controller-pod-identity` | ALB/NLB management | Ingress controller operations |
+| **Cluster Autoscaler** | `cluster-autoscaler-pod-identity` | EC2 Auto Scaling groups | Node scaling operations |
+| **cert-manager** | `cert-manager-pod-identity` | Route53 DNS validation | SSL certificate automation |
+
+#### **Security Benefits**
+- **🔒 No Long-lived Credentials**: No AWS access keys stored in Kubernetes secrets
+- **🔄 Automatic Rotation**: Temporary credentials automatically rotated by AWS STS
+- **🎯 Least Privilege**: Each service receives only required permissions
+- **📋 Audit Trail**: All AWS API calls logged with service account identity
+- **🏠 Namespace Isolation**: Pod Identity associations scoped to specific namespaces
+- **🛡️ Enhanced Security**: Eliminates credential sprawl and reduces attack surface
+
+#### **Implementation Details**
+```hcl
+# Example Pod Identity configuration (from vault.tf)
+module "vault_pod_identity" {
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "~> 2.0"
+
+  name = "${var.project_name}-vault"
+
+  additional_policy_arns = {
+    vault_kms = aws_iam_policy.vault_kms.arn
+  }
+
+  associations = {
+    vault = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = "vault"
+      service_account = "vault"
+    }
+  }
+}
+```
+
 ## ✨ Key Features
 
 ### **🚀 DevSecOps Automation**
@@ -135,11 +180,25 @@ Complete **DevSecOps platform** on Amazon EKS featuring:
 - **GitHub Actions** - CI/CD pipeline automation
 
 ### **🔒 Security Tools**
-- **HashiCorp Vault** - Secrets management and encryption
+- **HashiCorp Vault** - Secrets management and encryption with KMS auto-unsealing
 - **External Secrets Operator** - Kubernetes secrets automation
 - **Open Policy Agent (OPA) Gatekeeper** - Policy enforcement
 - **cert-manager** - Certificate lifecycle management
 - **Istio** - Service mesh security and observability
+
+#### **Vault Auto-Unsealing Configuration**
+```yaml
+# Vault seal configuration (from helm-values/vault.yaml)
+seal "awskms" {
+  region = "us-east-1"
+  kms_key_id = "alias/vault-unseal-key"
+}
+```
+
+**KMS Integration:**
+- **Dedicated KMS Key**: `vault-unseal-key` created specifically for Vault unsealing
+- **Pod Identity Permissions**: Vault Pod Identity provides KMS encrypt/decrypt permissions
+- **Automatic Unsealing**: Vault automatically unseals on startup without manual intervention
 
 ### **📊 Monitoring and Observability**
 - **Prometheus** - Metrics collection and alerting
@@ -218,6 +277,15 @@ eks-secure-infra-automation/
 | `cert-manager.tf` | Certificate Management | Automated TLS certificate lifecycle |
 | `opa-gatekeeper.tf` | Policy Engine | Runtime policy enforcement |
 | `external-secrets.tf` | AWS Integration | Secure secrets synchronization |
+
+### **🚪 AWS Load Balancer Controller**
+
+Configured for high availability with Network Load Balancer (NLB) integration:
+
+- **High Availability**: Multi-replica deployment with pod anti-affinity
+- **Pod Identity**: Secure AWS API access without long-lived credentials
+- **NLB Integration**: Layer 4 load balancing with direct pod IP targeting
+- **Istio Gateway**: Seamless service mesh ingress integration
 
 ## 📋 Prerequisites
 
@@ -598,7 +666,7 @@ DEV_USER_ARN: "arn:aws:iam::123456789012:user/developer"
 | **OPA Gatekeeper** | Policy enforcement | `gatekeeper-system` |
 | **cert-manager** | Certificate automation | `cert-manager` |
 | **External Secrets** | AWS secrets integration | `external-secrets` |
-| **AWS Load Balancer Controller** | Ingress management | `kube-system` |
+| **AWS Load Balancer Controller** | Ingress management with HA | `kube-system` |
 | **Cluster Autoscaler** | Node scaling | `kube-system` |
 | **Metrics Server** | Resource metrics | `kube-system` |
 
