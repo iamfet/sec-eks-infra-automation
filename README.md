@@ -266,7 +266,7 @@ Configured for high availability with Network Load Balancer (NLB) integration:
 
 ## ⚙️ Required Variables
 
-### **Required Variables**
+### **Required Variables for GithubActions**
 These variables are configured via GitHub Secrets for automated deployment:
 
 > **⚠️ Important**: AWS users must be created in your AWS account before deploying the infrastructure.
@@ -276,7 +276,7 @@ These variables are configured via GitHub Secrets for automated deployment:
 | `user_for_admin_role` | `ADMIN_USER_ARN` | ARN of AWS user for admin access | `arn:aws:iam::123456789012:user/admin` |
 | `user_for_dev_role` | `DEV_USER_ARN` | ARN of AWS user for developer access | `arn:aws:iam::123456789012:user/developer` |
 
-### **Optional Variables with Defaults**
+### **Terraform Variables with Defaults**
 
 | Variable | Default | Description |
 |----------|---------|-------------|
