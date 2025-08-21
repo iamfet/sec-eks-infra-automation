@@ -1,6 +1,5 @@
  **🔒 Security-First DevSecOps Platform**
 
-
 ## 🎯 Overview
 
 Complete **DevSecOps platform** on Amazon EKS featuring:
