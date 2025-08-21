@@ -2,14 +2,7 @@
 
 ## 🎯 Overview
 
-Complete **DevSecOps platform** on Amazon EKS featuring:
-- 🛡️ **Zero-trust security** with Istio service mesh
-- 🔐 **Fine-grained RBAC** with EKS API access entries
-- 🗝️ **Automated secrets management** with HashiCorp Vault
-- ⚖️ **Policy-as-code** enforcement with OPA Gatekeeper
-- 🚀 **GitOps deployment** with ArgoCD
-- 📊 **Comprehensive monitoring** with Prometheus and Grafana
-- 🏗️ **Infrastructure-as-code** with Terraform
+Complete **DevSecOps platform** on Amazon EKS featuring zero-trust security, automated secrets management, policy-as-code enforcement, GitOps deployment, and comprehensive monitoring - all managed through infrastructure-as-code with Terraform.
 
 ## 🏗️ Architecture Components
 
@@ -88,95 +81,60 @@ Complete **DevSecOps platform** on Amazon EKS featuring:
 6. **🔐 Identity Security** - Pod Identity + RBAC + service accounts
 7. **📊 Observability Security** - Comprehensive monitoring + audit logging
 
-### **🔐 AWS Pod Identity Integration**
-
-The platform uses **AWS Pod Identity** (successor to IRSA) for secure, credential-free AWS service authentication. Pod Identity provides temporary, automatically-rotated credentials to Kubernetes workloads without storing long-lived AWS access keys.
-
-#### **Pod Identity Roles and Permissions**
-
-| Service | Pod Identity Role | AWS Permissions | Purpose |
-|---------|------------------|-----------------|----------|
-| **Vault** | `vault-pod-identity` | KMS encrypt/decrypt operations | Auto-unsealing via dedicated KMS key |
-| **External Secrets** | `external-secrets-pod-identity` | Secrets Manager read access | Secure secret retrieval from AWS |
-| **AWS Load Balancer Controller** | `aws-load-balancer-controller-pod-identity` | ALB/NLB management | Ingress controller operations |
-| **Cluster Autoscaler** | `cluster-autoscaler-pod-identity` | EC2 Auto Scaling groups | Node scaling operations |
-| **cert-manager** | `cert-manager-pod-identity` | Route53 DNS validation | SSL certificate automation |
-
-#### **Security Benefits**
-- **No Long-lived Credentials**: No AWS access keys stored in Kubernetes secrets
-- **Automatic Rotation**: Temporary credentials automatically rotated by AWS STS
-- **Least Privilege**: Each service receives only required permissions
-- **Audit Trail**: All AWS API calls logged with service account identity
-- **Namespace Isolation**: Pod Identity associations scoped to specific namespaces
-
 ## ✨ Key Features
 
-### **🚀 DevSecOps Automation**
+### **🚀 Automation & DevOps**
 - **Infrastructure as Code** - Complete Terraform automation
 - **GitOps Deployment** - ArgoCD continuous delivery
-- **Policy as Code** - OPA Gatekeeper constraint templates
-- **Security as Code** - Automated security controls
-- **Monitoring as Code** - Grafana dashboards and alerts
+- **Auto-Scaling** - Cluster Autoscaler for dynamic node management
+- **CI/CD Integration** - GitHub Actions workflows with security scanning
 
-### **🔒 Enterprise Security**
-- **Zero-Trust Architecture** - mTLS encryption by default
+### **🔒 Security & Compliance**
+- **Zero-Trust Architecture** - Istio service mesh with mTLS encryption
+- **Policy as Code** - OPA Gatekeeper constraint templates and runtime enforcement
+- **Secrets Management** - HashiCorp Vault with KMS auto-unsealing
+- **Certificate Automation** - Let's Encrypt + cert-manager integration
 - **Fine-Grained RBAC** - EKS API access entries with namespace-level permissions
-- **Secrets Management** - Vault + External Secrets automation
-- **Certificate Automation** - Let's Encrypt + cert-manager + Route53 DNS validation
-- **Policy Enforcement** - Runtime admission control
+- **IAM Role Management** - External admin and developer roles with least-privilege access
+
+### **📊 Monitoring & Observability**
+- **Metrics & Dashboards** - Prometheus and Grafana stack
+- **Service Mesh Observability** - Istio distributed tracing
 - **Audit Logging** - Comprehensive security audit trail
+- **Proactive Alerting** - Automated alert management
 
-### **🛡️ Compliance & Governance**
-- **Access Management** - Admin users get cluster-wide access, developers restricted to specific namespaces
-- **Network Segmentation** - Istio service mesh isolation
-- **Data Encryption** - At-rest and in-transit encryption
-- **Policy Compliance** - Automated policy enforcement and monitoring
-- **Security Benchmarks** - CIS and security best practices
+### **🔐 AWS Integration**
 
-### **📊 Observability & Monitoring**
-- **Real-time Dashboards** - Grafana operational and security metrics
-- **Proactive Alerting** - Prometheus-based alert management
-- **Service Mesh Observability** - Istio distributed tracing and metrics
-- **Performance Monitoring** - Application and infrastructure metrics
+#### **Pod Identity (Successor to IRSA)**
+Secure, credential-free AWS service authentication:
+
+| Service | AWS Permissions | Purpose |
+|---------|-----------------|----------|
+| **Vault** | KMS encrypt/decrypt | Auto-unsealing via dedicated KMS key |
+| **External Secrets** | Secrets Manager read | Secure secret retrieval from AWS |
+| **Load Balancer Controller** | ALB/NLB management | Ingress controller operations |
+| **Cluster Autoscaler** | EC2 Auto Scaling | Node scaling operations |
+| **cert-manager** | Route53 DNS validation | SSL certificate automation |
+
+**Benefits**: No long-lived credentials, automatic rotation, least privilege, audit trail, namespace isolation
+
+#### **External IAM Roles**
+Least-privilege access management:
+
+| Role | Access Level | Can Be Assumed By |
+|------|-------------|-------------------|
+| **external-admin** | Cluster-wide admin | `user_for_admin_role` variable |
+| **external-developer** | Namespace-restricted | `user_for_dev_role` variable |
 
 ## 🛠️ Technology Stack
 
-### **☁️ Cloud Platform**
-- **Amazon Web Services (AWS)** - Cloud infrastructure provider
-- **Amazon EKS** - Managed Kubernetes service
-- **AWS Route53** - DNS management and health checking
-- **Let's Encrypt** - SSL/TLS certificate management via cert-manager
-- **AWS KMS** - Key management and encryption
-- **AWS Secrets Manager** - Centralized secrets storage
-- **AWS IAM** - Identity and access management
-
-### **🏗️ Infrastructure as Code**
-- **Terraform** - Infrastructure provisioning and management
-- **Helm** - Kubernetes package manager
-- **GitHub Actions** - CI/CD pipeline automation
-
-### **🔒 Security Tools**
-- **HashiCorp Vault** - Secrets management and encryption with KMS auto-unsealing
-  ```yaml
-  # Auto-unsealing configuration
-  seal "awskms" {
-    region = "us-east-1"
-    kms_key_id = "alias/vault-unseal-key"
-  }
-  ```
-- **External Secrets Operator** - Kubernetes secrets automation
-- **Open Policy Agent (OPA) Gatekeeper** - Policy enforcement
-- **cert-manager** - Certificate lifecycle management
-- **Istio** - Service mesh security and observability
-
-### **📊 Monitoring and Observability**
-- **Prometheus** - Metrics collection and alerting
-- **Grafana** - Visualization and dashboarding
-
-### **🚀 GitOps and Deployment**
-- **ArgoCD** - GitOps continuous delivery
-- **GitHub Actions** - CI/CD pipeline automation
-- **Git** - Version control and GitOps workflow
+| Category | Technologies | Purpose |
+|----------|-------------|----------|
+| **Cloud Platform** | AWS EKS, Route53, KMS, Secrets Manager, IAM | Managed Kubernetes and AWS services |
+| **Infrastructure** | Terraform, Helm, GitHub Actions | Infrastructure as Code and automation |
+| **Security** | Vault (KMS auto-unsealing), OPA Gatekeeper, Istio, cert-manager | Secrets, policies, service mesh, certificates |
+| **Monitoring** | Prometheus, Grafana | Metrics collection and visualization |
+| **GitOps** | ArgoCD, Git | Continuous deployment and version control |
 
 ## 📁 Repository Structure
 
