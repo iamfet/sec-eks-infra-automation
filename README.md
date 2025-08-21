@@ -744,6 +744,7 @@ aws elbv2 describe-load-balancers --query 'LoadBalancers[?contains(LoadBalancerN
 
 ## 🔗 Related Projects
 
+- **[Application Repository](https://github.com/iamfet/sec-online-boutique-appliation)** - Microservices source code
 - **[GitOps Repository](https://github.com/iamfet/sec-gitops-online-boutique)** - Deployment configurations and manifests
 
 ## 📚 Resources
