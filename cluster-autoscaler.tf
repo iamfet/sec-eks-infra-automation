@@ -32,46 +32,41 @@ resource "helm_release" "cluster-autoscaler" {
   namespace  = "kube-system"
   depends_on = [module.eks, helm_release.aws-load-balancer-controller, module.cluster_autoscaler_pod_identity]
 
-  set_string {
-    name  = "autoDiscovery.clusterName"
-    value = module.eks.cluster_name
-  }
-
-  set_string {
-    name  = "awsRegion"
-    value = var.aws_region
-  }
-
-  set_string {
-    name  = "rbac.create"
-    value = "true"
-  }
-
-  set_string {
-    name  = "rbac.serviceAccount.create"
-    value = "true"
-  }
-
-  set_string {
-    name  = "rbac.serviceAccount.name"
-    value = "cluster-autoscaler"
-  }
-
-  # Fine tune autoscaling
-  set_string {
-    name  = "extraArgs.scale-down-unneeded-time"
-    value = "2m"
-  }
-
-  set_string {
-    name  = "extraArgs.skip-nodes-with-local-storage"
-    value = "false"
-  }
-
-  set_string {
-    name  = "extraArgs.skip-nodes-with-system-pods"
-    value = "false"
-  }
+  set = [
+    {
+      name  = "autoDiscovery.clusterName"
+      value = module.eks.cluster_name
+    },
+    {
+      name  = "awsRegion"
+      value = var.aws_region
+    },
+    {
+      name  = "rbac.create"
+      value = "true"
+    },
+    {
+      name  = "rbac.serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "rbac.serviceAccount.name"
+      value = "cluster-autoscaler"
+    },
+    # Fine tune autoscaling
+    {
+      name  = "extraArgs.scale-down-unneeded-time"
+      value = "2m"
+    },
+    {
+      name  = "extraArgs.skip-nodes-with-local-storage"
+      value = "false"
+    },
+    {
+      name  = "extraArgs.skip-nodes-with-system-pods"
+      value = "false"
+    }
+  ]
 }
 
 # Cluster Autoscaler IRSA (commented out - replaced with Pod Identity)

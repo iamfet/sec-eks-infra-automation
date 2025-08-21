@@ -32,25 +32,24 @@ resource "helm_release" "aws-load-balancer-controller" {
 
   wait = true
 
-  set_string {
-    name  = "clusterName"
-    value = module.eks.cluster_name
-  }
-
-  set_string {
-    name  = "vpcId"
-    value = module.vpc.vpc_id
-  }
-
-  set_string {
-    name  = "serviceAccount.create"
-    value = "true"
-  }
-
-  set_string {
-    name  = "serviceAccount.name"
-    value = "aws-load-balancer-controller"
-  }
+  set = [
+    {
+      name  = "clusterName"
+      value = module.eks.cluster_name
+    },
+    {
+      name  = "vpcId"
+      value = module.vpc.vpc_id
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "aws-load-balancer-controller"
+    }
+  ]
 }
 
 # AWS Load Balancer Controller IRSA (replaced with Pod Identity)

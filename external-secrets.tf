@@ -9,23 +9,22 @@ resource "helm_release" "external-secrets" {
 
   wait = true
 
-  set_string {
-    name  = "serviceAccount.create"
-    value = "true"
-  }
-
-  set_string {
-    name  = "serviceAccount.name"
-    value = "external-secrets"
-  }
-
-  set_string {
-    name  = "serviceMonitor.enabled"
-    value = "true"
-  }
-
-  set_string {
-    name  = "metrics.service.enabled"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "external-secrets"
+    },
+    {
+      name  = "serviceMonitor.enabled"
+      value = "true"
+    },
+    {
+      name  = "metrics.service.enabled"
+      value = "true"
+    }
+  ]
 }

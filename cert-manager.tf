@@ -37,15 +37,16 @@ resource "helm_release" "cert_manager" {
   create_namespace = true
   depends_on       = [module.eks, module.cert_manager_pod_identity, helm_release.aws-load-balancer-controller]
 
-  set_string {
-    name  = "installCRDs"
-    value = "true"
-  }
-
-  set_string {
-    name  = "serviceAccount.create"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    }
+  ]
 }
 
 # Cert Manager IRSA (commented out - replaced with Pod Identity)

@@ -76,15 +76,16 @@ resource "helm_release" "vault" {
     file("${path.module}/helm-values/vault.yaml")
   ]
 
-  set_string {
-    name  = "server.serviceAccount.create"
-    value = "true"
-  }
-
-  set_string {
-    name  = "server.serviceAccount.name"
-    value = "vault"
-  }
+  set = [
+    {
+      name  = "server.serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "server.serviceAccount.name"
+      value = "vault"
+    }
+  ]
 }
 
 # IRSA Role for Vault Server (commented out - replaced with Pod Identity)
