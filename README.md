@@ -98,6 +98,7 @@ Complete **DevSecOps platform** on Amazon EKS featuring zero-trust security, aut
 - **Fine-Grained RBAC** - EKS API access entries with namespace-level permissions
 - **Restricted Cluster Access** - Only users configured in access entries can access the EKS cluster
 - **IAM Role Management** - External admin and developer roles with least-privilege access
+- **Short-Lived Credentials** - IAM role assumption provides temporary, time-limited access tokens for enhanced security
 
 ### **📊 Monitoring & Observability**
 - **Metrics & Dashboards** - Prometheus and Grafana stack
@@ -334,12 +335,27 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
 
 ### **Step 4: Post-Deployment Verification**
 
-1. **Configure kubectl access**
+1. **Configure AWS CLI with access entry user**
    ```bash
-   aws eks update-kubeconfig --region us-east-1 --name carney-shop-eks-cluster
+   # Configure AWS CLI with admin or developer user credentials
+   aws configure --profile admin
+   # Use the user configured in ADMIN_USER_ARN or DEV_USER_ARN
    ```
 
-2. **Verify deployment status**
+2. **Assume IAM role for cluster access**
+   ```bash
+   # Assume the external-admin role (created by Terraform)
+   aws sts assume-role --role-arn arn:aws:iam::ACCOUNT_ID:role/external-admin --role-session-name eks-access --profile admin
+   # Or assume external-developer role for limited access
+   # aws sts assume-role --role-arn arn:aws:iam::ACCOUNT_ID:role/external-developer --role-session-name eks-access --profile admin
+   ```
+
+3. **Configure kubectl access**
+   ```bash
+   aws eks update-kubeconfig --region us-east-1 --name carney-shop-eks-cluster --role-arn arn:aws:iam::ACCOUNT_ID:role/external-admin
+   ```
+
+4. **Verify deployment status**
    ```bash
    kubectl get nodes
    kubectl get pods --all-namespaces
