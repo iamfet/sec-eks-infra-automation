@@ -15,7 +15,7 @@ Complete **DevSecOps platform** on Amazon EKS featuring:
 
 | Layer | Components | Purpose |
 |-------|------------|----------|
-| **🌐 Edge Security** | Route53, Let's Encrypt, AWS ALB | DNS, certificates, and secure ingress |
+| **🌐 Edge Security** | Route53, Let's Encrypt, AWS NLB | DNS, certificates, and secure ingress |
 | **🛡️ Service Mesh** | Istio, Envoy Proxy | Zero-trust networking with mTLS |
 | **🔒 Security Controls** | OPA Gatekeeper, cert-manager | Policy enforcement and certificate automation |
 | **🗝️ Secrets Management** | Vault, External Secrets, KMS | Centralized secrets with encryption |
@@ -103,35 +103,11 @@ The platform uses **AWS Pod Identity** (successor to IRSA) for secure, credentia
 | **cert-manager** | `cert-manager-pod-identity` | Route53 DNS validation | SSL certificate automation |
 
 #### **Security Benefits**
-- **🔒 No Long-lived Credentials**: No AWS access keys stored in Kubernetes secrets
-- **🔄 Automatic Rotation**: Temporary credentials automatically rotated by AWS STS
-- **🎯 Least Privilege**: Each service receives only required permissions
-- **📋 Audit Trail**: All AWS API calls logged with service account identity
-- **🏠 Namespace Isolation**: Pod Identity associations scoped to specific namespaces
-- **🛡️ Enhanced Security**: Eliminates credential sprawl and reduces attack surface
-
-#### **Implementation Details**
-```hcl
-# Example Pod Identity configuration (from vault.tf)
-module "vault_pod_identity" {
-  source  = "terraform-aws-modules/eks-pod-identity/aws"
-  version = "~> 2.0"
-
-  name = "${var.project_name}-vault"
-
-  additional_policy_arns = {
-    vault_kms = aws_iam_policy.vault_kms.arn
-  }
-
-  associations = {
-    vault = {
-      cluster_name    = module.eks.cluster_name
-      namespace       = "vault"
-      service_account = "vault"
-    }
-  }
-}
-```
+- **No Long-lived Credentials**: No AWS access keys stored in Kubernetes secrets
+- **Automatic Rotation**: Temporary credentials automatically rotated by AWS STS
+- **Least Privilege**: Each service receives only required permissions
+- **Audit Trail**: All AWS API calls logged with service account identity
+- **Namespace Isolation**: Pod Identity associations scoped to specific namespaces
 
 ## ✨ Key Features
 
@@ -181,24 +157,17 @@ module "vault_pod_identity" {
 
 ### **🔒 Security Tools**
 - **HashiCorp Vault** - Secrets management and encryption with KMS auto-unsealing
+  ```yaml
+  # Auto-unsealing configuration
+  seal "awskms" {
+    region = "us-east-1"
+    kms_key_id = "alias/vault-unseal-key"
+  }
+  ```
 - **External Secrets Operator** - Kubernetes secrets automation
 - **Open Policy Agent (OPA) Gatekeeper** - Policy enforcement
 - **cert-manager** - Certificate lifecycle management
 - **Istio** - Service mesh security and observability
-
-#### **Vault Auto-Unsealing Configuration**
-```yaml
-# Vault seal configuration (from helm-values/vault.yaml)
-seal "awskms" {
-  region = "us-east-1"
-  kms_key_id = "alias/vault-unseal-key"
-}
-```
-
-**KMS Integration:**
-- **Dedicated KMS Key**: `vault-unseal-key` created specifically for Vault unsealing
-- **Pod Identity Permissions**: Vault Pod Identity provides KMS encrypt/decrypt permissions
-- **Automatic Unsealing**: Vault automatically unseals on startup without manual intervention
 
 ### **📊 Monitoring and Observability**
 - **Prometheus** - Metrics collection and alerting
@@ -391,22 +360,20 @@ environment = "production"
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone repository
+# Clone and setup
 git clone https://github.com/iamfet/sec-eks-infra-automation.git
 cd sec-eks-infra-automation
-
-# 2. Configure variables
 cp terraform.tfvars.example terraform.tfvars
-# Edit with your AWS settings
+# Edit terraform.tfvars with your AWS settings
 
-# 3. Deploy backend (first time only)
+# Deploy backend (first time only)
 cd backend && terraform init && terraform apply && cd ..
 
-# 4. Deploy infrastructure
+# Deploy infrastructure
 terraform init
 terraform apply -var-file="terraform.tfvars"
 
-# 5. Access cluster
+# Configure kubectl
 aws eks update-kubeconfig --region us-east-1 --name $(terraform output -raw cluster_name)
 ```
 
@@ -546,49 +513,12 @@ aws eks update-kubeconfig --region us-east-1 --name $(terraform output -raw clus
 
 **For testing without domain configuration:**
 
-1. **ArgoCD**
-   ```bash
-   # Get admin password
-   kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
-   
-   # Port forward
-   kubectl port-forward svc/argocd-server -n argocd 8080:443
-   
-   # Access: https://localhost:8080
-   # Username: admin
-   # Password: <from above command>
-   ```
-
-2. **Grafana**
-   ```bash
-   # Get admin password
-   kubectl get secret kube-prometheus-stack-grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 -d
-   
-   # Port forward
-   kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80
-   
-   # Access: http://localhost:3000
-   # Username: admin
-   # Password: <from above command>
-   ```
-
-3. **Vault**
-   ```bash
-   # Port forward
-   kubectl port-forward svc/vault -n vault 8200:8200
-   
-   # Access: http://localhost:8200
-   # Initialize Vault (first time only)
-   kubectl exec -n vault vault-0 -- vault operator init
-   ```
-
-4. **Prometheus**
-   ```bash
-   # Port forward
-   kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090
-   
-   # Access: http://localhost:9090
-   ```
+| Service | Port Forward Command | Access URL | Credentials |
+|---------|---------------------|------------|-------------|
+| **ArgoCD** | `kubectl port-forward svc/argocd-server -n argocd 8080:443` | https://localhost:8080 | admin / `kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" \| base64 -d` |
+| **Grafana** | `kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80` | http://localhost:3000 | admin / `kubectl get secret kube-prometheus-stack-grafana -n monitoring -o jsonpath="{.data.admin-password}" \| base64 -d` |
+| **Vault** | `kubectl port-forward svc/vault -n vault 8200:8200` | http://localhost:8200 | Initialize: `kubectl exec -n vault vault-0 -- vault operator init` |
+| **Prometheus** | `kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090` | http://localhost:9090 | No authentication required |
 
 ## 🚀 GitHub Actions CI/CD
 
