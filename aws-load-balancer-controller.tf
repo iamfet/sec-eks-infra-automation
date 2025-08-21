@@ -32,22 +32,22 @@ resource "helm_release" "aws-load-balancer-controller" {
 
   wait = true
 
-  set {
+  set_string {
     name  = "clusterName"
     value = module.eks.cluster_name
   }
 
-  set {
+  set_string {
     name  = "vpcId"
     value = module.vpc.vpc_id
   }
 
-  set {
+  set_string {
     name  = "serviceAccount.create"
     value = "true"
   }
 
-  set {
+  set_string {
     name  = "serviceAccount.name"
     value = "aws-load-balancer-controller"
   }

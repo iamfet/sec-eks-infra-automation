@@ -32,43 +32,43 @@ resource "helm_release" "cluster-autoscaler" {
   namespace  = "kube-system"
   depends_on = [module.eks, helm_release.aws-load-balancer-controller, module.cluster_autoscaler_pod_identity]
 
-  set {
+  set_string {
     name  = "autoDiscovery.clusterName"
     value = module.eks.cluster_name
   }
 
-  set {
+  set_string {
     name  = "awsRegion"
     value = var.aws_region
   }
 
-  set {
+  set_string {
     name  = "rbac.create"
     value = "true"
   }
 
-  set {
+  set_string {
     name  = "rbac.serviceAccount.create"
     value = "true"
   }
 
-  set {
+  set_string {
     name  = "rbac.serviceAccount.name"
     value = "cluster-autoscaler"
   }
 
   # Fine tune autoscaling
-  set {
+  set_string {
     name  = "extraArgs.scale-down-unneeded-time"
     value = "2m"
   }
 
-  set {
+  set_string {
     name  = "extraArgs.skip-nodes-with-local-storage"
     value = "false"
   }
 
-  set {
+  set_string {
     name  = "extraArgs.skip-nodes-with-system-pods"
     value = "false"
   }

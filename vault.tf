@@ -76,12 +76,12 @@ resource "helm_release" "vault" {
     file("${path.module}/helm-values/vault.yaml")
   ]
 
-  set {
+  set_string {
     name  = "server.serviceAccount.create"
     value = "true"
   }
 
-  set {
+  set_string {
     name  = "server.serviceAccount.name"
     value = "vault"
   }
