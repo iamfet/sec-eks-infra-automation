@@ -799,6 +799,7 @@ aws elbv2 describe-load-balancers --query 'LoadBalancers[?contains(LoadBalancerN
 - [ArgoCD Documentation](https://argo-cd.readthedocs.io/)
 - [HashiCorp Vault Documentation](https://www.vaultproject.io/docs)
 - [OPA Gatekeeper Documentation](https://open-policy-agent.github.io/gatekeeper/)
+- [cert-manager Documentation](https://cert-manager.io/docs/)
 
 ## 📄 License
 
