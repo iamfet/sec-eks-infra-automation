@@ -294,6 +294,79 @@ These variables are configured via GitHub Secrets for automated deployment:
 
 > **⚠️ Important**: This must be configured before running any GitHub Actions workflows.
 
+## 🚀 GitHub Actions CI/CD
+
+### **Automated Workflows**
+
+The repository includes three GitHub Actions workflows for complete infrastructure lifecycle management:
+
+### **1. Bootstrap Backend (`bootstrap-backend.yaml`)**
+
+**Purpose**: Sets up Terraform remote state backend (S3 with native state lock)
+
+**Trigger**: Manual with confirmation (`workflow_dispatch`)
+
+**Key Features**:
+- ⚠️ **Confirmation Required** - Must type "create" to proceed
+- 🗄️ **S3 Backend Setup** - Creates remote state storage
+- 🔒 **State Locking** - Prevents concurrent Terraform runs
+
+### **2. Deploy Infrastructure (`deploy-infrastructure.yaml`)**
+
+**Purpose**: Validates, plans, and deploys the complete DevSecOps platform
+
+**Triggers**:
+- **Push to main** - Automatic deployment
+- **Pull Request** - Validation and planning only
+
+**Pipeline Stages**:
+
+#### **Stage 1: Validation**
+- ✅ **Terraform Format Check** - Code formatting validation
+- ✅ **Terraform Init & Validate** - Syntax and configuration validation
+- 📊 **Caching** - Terraform provider caching for faster runs
+
+#### **Stage 2: Security Scanning**
+- 🔍 **tfsec** - Terraform security analysis
+- 🛡️ **Checkov** - Infrastructure as Code security scanning
+- 🔧 **Soft Fail** - Security scans don't block deployment
+
+#### **Stage 3: Planning**
+- 📋 **Terraform Plan** - Generate execution plan
+- 💬 **PR Comments** - Automatic plan summary in pull requests
+- 📎 **Plan Artifacts** - Upload plan for apply stage
+
+#### **Stage 4: Apply (Main Branch Only)**
+- 🚀 **Terraform Apply** - Deploy infrastructure changes
+- ✅ **Deployment Verification** - Validate cluster and pods
+- 🔄 **ArgoCD Apps** - Deploy GitOps applications
+
+#### **GitHub Secrets and Variables Configuration**
+
+| Type | Name | Required | Description | Example |
+|------|------|----------|-------------|----------|
+| **Secret** | `ACTIONS_AWS_ROLE_ARN` | ✅ | AWS OIDC role for GitHub Actions | `arn:aws:iam::123456789012:role/github-actions-role` |
+| **Secret** | `ADMIN_USER_ARN` | ✅ | ARN of AWS user for admin access | `arn:aws:iam::123456789012:user/admin` |
+| **Secret** | `DEV_USER_ARN` | ✅ | ARN of AWS user for developer access | `arn:aws:iam::123456789012:user/developer` |
+| **Variable** | `AWS_REGION` | ✅ | AWS deployment region | `us-east-1` |
+| **Secret** | `GITOPS_URL` | ❌ | GitOps repository URL (for private repos) | `https://github.com/username/private-repo.git` |
+| **Secret** | `GITOPS_USERNAME` | ❌ | GitOps repository username | `username` |
+| **Secret** | `GITOPS_PASSWORD` | ❌ | GitOps repository token/password | `ghp_xxxxxxxxxxxx` |
+
+> **🔒 Access Control**: Only users configured in `ADMIN_USER_ARN` and `DEV_USER_ARN` will be granted access to the EKS cluster through access entries. All other AWS users will be denied cluster access.
+
+### **3. Destroy Infrastructure (`destroy-infrastructure.yaml`)**
+
+**Purpose**: Safely destroys all infrastructure resources
+
+**Trigger**: Manual with confirmation (`workflow_dispatch`)
+
+**Safety Features**:
+- ⚠️ **Confirmation Required** - Must type "destroy" to proceed
+- 🔒 **OIDC Authentication** - Secure AWS access for destruction
+- 🧹 **Complete Cleanup** - Destroys all EKS and VPC resources
+- 📝 **Backend Warning** - Provides instructions for manual backend cleanup
+
 ## 🚀 Quick Start
 
 ### **Automated Deployment**
@@ -323,6 +396,8 @@ git push origin main
 
 2. **Add required secrets and variables**
    - See GitHub Actions CI/CD section below for complete list of required secrets and variables
+
+> **🔒 Access Control**: Only users configured in `ADMIN_USER_ARN` and `DEV_USER_ARN` will be granted access to the EKS cluster through access entries. All other AWS users will be denied cluster access.
 
 ### **Step 2: Backend Setup (First Time Only)**
 
@@ -463,8 +538,6 @@ The repository includes three GitHub Actions workflows for complete infrastructu
 | **Secret** | `GITOPS_URL` | ❌ | GitOps repository URL (for private repos) | `https://github.com/username/private-repo.git` |
 | **Secret** | `GITOPS_USERNAME` | ❌ | GitOps repository username | `username` |
 | **Secret** | `GITOPS_PASSWORD` | ❌ | GitOps repository token/password | `ghp_xxxxxxxxxxxx` |
-
-> **🔒 Access Control**: Only users configured in `ADMIN_USER_ARN` and `DEV_USER_ARN` will be granted access to the EKS cluster through access entries. All other AWS users will be denied cluster access.
 
 ### **3. Destroy Infrastructure (`destroy-infrastructure.yaml`)**
 
