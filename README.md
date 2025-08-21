@@ -342,17 +342,22 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
    # Use the user configured in ADMIN_USER_ARN or DEV_USER_ARN
    ```
 
-2. **Assume IAM role for cluster access**
+2. **Assume IAM role and export credentials**
    ```bash
-   # Assume the external-admin role (created by Terraform)
-   aws sts assume-role --role-arn arn:aws:iam::ACCOUNT_ID:role/external-admin --role-session-name eks-access --profile admin
-   # Or assume external-developer role for limited access
-   # aws sts assume-role --role-arn arn:aws:iam::ACCOUNT_ID:role/external-developer --role-session-name eks-access --profile admin
+   # Replace 123456789012 with your actual AWS account ID
+   # Assume the external-admin role and capture output
+   ROLE_OUTPUT=$(aws sts assume-role --role-arn arn:aws:iam::123456789012:role/external-admin --role-session-name eks-access --profile admin)
+   
+   # Export temporary credentials
+   export AWS_ACCESS_KEY_ID=$(echo $ROLE_OUTPUT | jq -r '.Credentials.AccessKeyId')
+   export AWS_SECRET_ACCESS_KEY=$(echo $ROLE_OUTPUT | jq -r '.Credentials.SecretAccessKey')
+   export AWS_SESSION_TOKEN=$(echo $ROLE_OUTPUT | jq -r '.Credentials.SessionToken')
    ```
 
 3. **Configure kubectl access**
    ```bash
-   aws eks update-kubeconfig --region us-east-1 --name carney-shop-eks-cluster --role-arn arn:aws:iam::ACCOUNT_ID:role/external-admin
+   # Use the exported credentials to configure kubectl
+   aws eks update-kubeconfig --region us-east-1 --name carney-shop-eks-cluster
    ```
 
 4. **Verify deployment status**
