@@ -242,6 +242,10 @@ Configured for high availability with Network Load Balancer (NLB) integration:
   ```bash
   kubectl version --client
   ```
+- **jq** - JSON processor for parsing AWS CLI output
+  ```bash
+  jq --version
+  ```
 - **Helm** - Version >= 3.0 (optional, for manual operations)
   ```bash
   helm version
@@ -284,6 +288,12 @@ These variables are configured via GitHub Secrets for automated deployment:
 | `public_subnets_cidr` | `["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]` | Public subnet CIDRs |
 | `environment` | `dev` | Environment name |
 
+## 🔐 AWS OIDC Configuration
+
+**AWS OIDC Configuration**: Configure AWS OIDC provider for GitHub Actions to assume roles without storing AWS credentials in GitHub
+
+> **⚠️ Important**: This must be configured before running any GitHub Actions workflows.
+
 ## 🚀 Quick Start
 
 ### **Automated Deployment**
@@ -298,7 +308,7 @@ cd sec-eks-infra-automation
 # Trigger automated deployment (GitHub Actions triggered by .tf file changes only)
 echo "# Trigger deployment" >> variables.tf
 git add variables.tf
-git commit -m "Trigger infrastructure deployment"
+git commit -m "chore: trigger infrastructure deployment"
 git push origin main
 # GitHub Actions will automatically deploy when .tf files are modified
 ```
@@ -307,15 +317,20 @@ git push origin main
 
 ### **Step 1: Configure GitHub Secrets**
 
-Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD section for complete list)
+1. **Navigate to GitHub repository settings**
+   - Go to your forked repository on GitHub
+   - Click Settings → Secrets and variables → Actions
+
+2. **Add required secrets and variables**
+   - See GitHub Actions CI/CD section below for complete list of required secrets and variables
 
 ### **Step 2: Backend Setup (First Time Only)**
 
-1. **Bootstrap backend via GitHub Actions**
-   - Go to Actions tab in GitHub repository
-   - Run "Bootstrap Backend" workflow
-   - Type "create" when prompted to confirm
-   - GitHub Actions will automatically create S3 bucket and DynamoDB table
+**Bootstrap Terraform backend via GitHub Actions:**
+1. Go to Actions tab in your GitHub repository
+2. Run "Bootstrap Backend" workflow
+3. Type "create" when prompted to confirm
+4. GitHub Actions will automatically create S3 bucket and DynamoDB table
 
 ### **Step 3: Infrastructure Deployment**
 
@@ -324,7 +339,7 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
    # Make any change to .tf files to trigger GitHub Actions
    echo "# Deploy infrastructure" >> variables.tf
    git add variables.tf
-   git commit -m "Deploy infrastructure"
+   git commit -m "chore: deploy infrastructure"
    git push origin main
    ```
 
@@ -335,11 +350,14 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
 
 ### **Step 4: Post-Deployment Verification**
 
+**Configure local access to verify the deployment:**
+
 1. **Configure AWS CLI with access entry user**
    ```bash
-   # Configure AWS CLI with admin or developer user credentials
+   # Configure AWS CLI with the specific user credentials from ADMIN_USER_ARN or DEV_USER_ARN
+   # This user must exist in your AWS account and have permission to assume the external roles
    aws configure --profile admin
-   # Use the user configured in ADMIN_USER_ARN or DEV_USER_ARN
+   # Enter Access Key ID and Secret Access Key for the user specified in ADMIN_USER_ARN
    ```
 
 2. **Assume IAM role and export credentials**
@@ -348,11 +366,13 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
    # Assume the external-admin role and capture output
    ROLE_OUTPUT=$(aws sts assume-role --role-arn arn:aws:iam::123456789012:role/external-admin --role-session-name eks-access --profile admin)
    
-   # Export temporary credentials
+   # Export temporary credentials (must be run in the same terminal session)
    export AWS_ACCESS_KEY_ID=$(echo $ROLE_OUTPUT | jq -r '.Credentials.AccessKeyId')
    export AWS_SECRET_ACCESS_KEY=$(echo $ROLE_OUTPUT | jq -r '.Credentials.SecretAccessKey')
    export AWS_SESSION_TOKEN=$(echo $ROLE_OUTPUT | jq -r '.Credentials.SessionToken')
    ```
+   
+   > **⚠️ Important**: These credentials are only valid in the current terminal session. All subsequent AWS commands must be run in the same terminal.
 
 3. **Configure kubectl access**
    ```bash
@@ -384,12 +404,6 @@ Configure required GitHub Secrets and Variables (see GitHub Actions CI/CD sectio
 | **Grafana** | `kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80` | http://localhost:3000 | admin / `kubectl get secret kube-prometheus-stack-grafana -n monitoring -o jsonpath="{.data.admin-password}" \| base64 -d` |
 | **Vault** | `kubectl port-forward svc/vault -n vault 8200:8200` | http://localhost:8200 | Initialize: `kubectl exec -n vault vault-0 -- vault operator init` |
 | **Prometheus** | `kubectl port-forward svc/kube-prometheus-stack-prometheus -n monitoring 9090:9090` | http://localhost:9090 | No authentication required |
-
-## 🔐 AWS OIDC Configuration
-
-**AWS OIDC Configuration**: Configure AWS OIDC provider for GitHub Actions to assume roles without storing AWS credentials in GitHub
-
-> **⚠️ Important**: This must be configured before running any GitHub Actions workflows.
 
 ## 🚀 GitHub Actions CI/CD
 
