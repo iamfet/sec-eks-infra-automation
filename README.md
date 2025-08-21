@@ -555,12 +555,17 @@ The repository includes three GitHub Actions workflows for complete infrastructu
 - ✅ **Terraform Init & Validate** - Syntax and configuration validation
 - 📊 **Caching** - Terraform provider caching for faster runs
 
-#### **Stage 2: Planning**
+#### **Stage 2: Security Scanning**
+- 🔍 **tfsec** - Terraform security analysis
+- 🛡️ **Checkov** - Infrastructure as Code security scanning
+- 🔧 **Soft Fail** - Security scans don't block deployment
+
+#### **Stage 3: Planning**
 - 📋 **Terraform Plan** - Generate execution plan
 - 💬 **PR Comments** - Automatic plan summary in pull requests
 - 📎 **Plan Artifacts** - Upload plan for apply stage
 
-#### **Stage 3: Apply (Main Branch Only)**
+#### **Stage 4: Apply (Main Branch Only)**
 - 🚀 **Terraform Apply** - Deploy infrastructure changes
 - ✅ **Deployment Verification** - Validate cluster and pods
 - 🔄 **ArgoCD Apps** - Deploy GitOps applications
