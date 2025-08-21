@@ -95,6 +95,7 @@ Complete **DevSecOps platform** on Amazon EKS featuring zero-trust security, aut
 - **Secrets Management** - HashiCorp Vault with KMS auto-unsealing
 - **Certificate Automation** - Let's Encrypt + cert-manager integration
 - **Fine-Grained RBAC** - EKS API access entries with namespace-level permissions
+- **Restricted Cluster Access** - Only users configured in access entries can access the EKS cluster
 - **IAM Role Management** - External admin and developer roles with least-privilege access
 
 ### **📊 Monitoring & Observability**
@@ -225,15 +226,10 @@ Configured for high availability with Network Load Balancer (NLB) integration:
   aws configure
   aws sts get-caller-identity  # Verify credentials
   ```
-- **AWS Permissions** - IAM user/role with permissions for:
-  - EKS cluster creation and management
-  - VPC, subnets, security groups, and networking
-  - IAM roles and policies creation
-  - Route53 hosted zone management
-  - Certificate Manager (ACM) access
-  - KMS key management
-  - Secrets Manager access
-  - Load Balancer Controller permissions
+- **GitHub Actions OIDC Role** - Must be created manually for GitHub Actions authentication
+- **AWS Users** - Admin and developer users must exist (referenced in ADMIN_USER_ARN and DEV_USER_ARN)
+
+> **Note**: All other IAM roles and permissions are automatically created by Terraform
 
 ### **🏗️ Infrastructure Tools**
 - **Terraform** - Version >= 1.5
@@ -440,10 +436,12 @@ The repository includes three GitHub Actions workflows for complete infrastructu
 # AWS Authentication
 ACTIONS_AWS_ROLE_ARN: "arn:aws:iam::123456789012:role/github-actions-role"
 
-# User ARNs for EKS RBAC
+# User ARNs for EKS RBAC - Only these users will have cluster access
 ADMIN_USER_ARN: "arn:aws:iam::123456789012:user/admin"
 DEV_USER_ARN: "arn:aws:iam::123456789012:user/developer"
 ```
+
+> **🔒 Access Control**: Only users configured in `ADMIN_USER_ARN` and `DEV_USER_ARN` will be granted access to the EKS cluster through access entries. All other AWS users will be denied cluster access.
 
 **Required GitHub Variables**:
 ```yaml
