@@ -529,15 +529,17 @@ The repository includes three GitHub Actions workflows for complete infrastructu
 
 #### **GitHub Secrets and Variables Configuration**
 
-| Type | Name | Required | Description | Example |
-|------|------|----------|-------------|----------|
-| **Secret** | `ACTIONS_AWS_ROLE_ARN` | ✅ | AWS OIDC role for GitHub Actions | `arn:aws:iam::123456789012:role/github-actions-role` |
-| **Secret** | `ADMIN_USER_ARN` | ✅ | ARN of AWS user for admin access | `arn:aws:iam::123456789012:user/admin` |
-| **Secret** | `DEV_USER_ARN` | ✅ | ARN of AWS user for developer access | `arn:aws:iam::123456789012:user/developer` |
-| **Variable** | `AWS_REGION` | ✅ | AWS deployment region | `us-east-1` |
-| **Secret** | `GITOPS_URL` | ❌ | GitOps repository URL (for private repos) | `https://github.com/username/private-repo.git` |
-| **Secret** | `GITOPS_USERNAME` | ❌ | GitOps repository username | `username` |
-| **Secret** | `GITOPS_PASSWORD` | ❌ | GitOps repository token/password | `ghp_xxxxxxxxxxxx` |
+| Type | Name | Description | Example |
+|------|------|-------------|----------|
+| **Secret** | `ACTIONS_AWS_ROLE_ARN` | AWS OIDC role for GitHub Actions | `arn:aws:iam::123456789012:role/github-actions-role` |
+| **Secret** | `ADMIN_USER_ARN` | ARN of AWS user for admin access | `arn:aws:iam::123456789012:user/admin` |
+| **Secret** | `DEV_USER_ARN` | ARN of AWS user for developer access | `arn:aws:iam::123456789012:user/developer` |
+| **Variable** | `AWS_REGION` | AWS deployment region | `us-east-1` |
+| **Secret** | `GITOPS_URL` | GitOps repository URL | `https://github.com/username/private-repo.git` |
+| **Secret** | `GITOPS_USERNAME` | GitOps repository username | `username` |
+| **Secret** | `GITOPS_PASSWORD` | GitOps repository token/password | `ghp_xxxxxxxxxxxx` |
+
+> **Note**: GitOps variables (GITOPS_URL, GITOPS_USERNAME, GITOPS_PASSWORD) are only required for private repositories.
 
 ### **3. Destroy Infrastructure (`destroy-infrastructure.yaml`)**
 
