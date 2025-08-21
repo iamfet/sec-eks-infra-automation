@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-Complete **DevSecOps platform** on Amazon EKS featuring zero-trust security, automated secrets management, policy-as-code enforcement, GitOps deployment, and comprehensive monitoring - all managed through infrastructure-as-code with Terraform.
+Complete **DevSecOps platform** on Amazon EKS featuring zero-trust security, automated secrets management, policy-as-code enforcement, GitOps deployment, comprehensive monitoring, and secure cluster access with short-lived credentials - all managed through infrastructure-as-code with Terraform.
 
 ## 🏗️ Architecture Components
 
