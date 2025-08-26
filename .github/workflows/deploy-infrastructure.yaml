@@ -172,6 +172,12 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
+      - name: Restore Terraform Cache
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -183,6 +189,9 @@ jobs:
         uses: actions/download-artifact@v4.3.0
         with:
           name: tfplan
+
+      - name: Terraform Init
+        run: terraform init
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
