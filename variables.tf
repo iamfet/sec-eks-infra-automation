@@ -52,6 +52,30 @@ variable "environment" {
   default     = "dev"
 }
 
+variable "node_group_instance_types" {
+  description = "Instance types for EKS managed node group"
+  type        = list(string)
+  default     = ["t2.large"]
+}
+
+variable "node_group_min_size" {
+  description = "Minimum number of nodes in the EKS managed node group"
+  type        = number
+  default     = 1
+}
+
+variable "node_group_max_size" {
+  description = "Maximum number of nodes in the EKS managed node group"
+  type        = number
+  default     = 4
+}
+
+variable "node_group_desired_size" {
+  description = "Desired number of nodes in the EKS managed node group"
+  type        = number
+  default     = 2
+}
+
 # If the git repository that ArgoCD syncs is private, these variables are required
 #variable "gitops_url" {
 #  description = "URL of git repo argocd connects and sync"
